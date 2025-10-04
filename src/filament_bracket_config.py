@@ -111,9 +111,7 @@ class FilamentBracketConfig(PartomaticConfig):
     wall_window_apothem: float = 8
     wall_window_bar_thickness: float = 1.5
     bearing_shelf_height: float = 4.3
-    channel_pair_direction: ChannelPairDirection = (
-        ChannelPairDirection.LEAN_FORWARD
-    )
+    channel_pair_direction: ChannelPairDirection = ChannelPairDirection.LEAN_FORWARD
     block_pin_generation: bool = False
 
     @property
@@ -123,18 +121,14 @@ class FilamentBracketConfig(PartomaticConfig):
         to clear the filament wheel
         """
         return circular_intersection(
-            self.wheel.radius
-            + self.wheel.radial_tolerance
-            + self.minimum_thickness,
+            self.wheel.radius + self.wheel.radial_tolerance + self.minimum_thickness,
             self.wheel.radius - self.connector.tube.outer_radius,
         )
 
     @property
     def wheel_guide_outer_radius(self) -> float:
         return (
-            self.wheel.radius
-            + self.wheel.radial_tolerance
-            + self.wheel_support_height
+            self.wheel.radius + self.wheel.radial_tolerance + self.wheel_support_height
         )
 
     @property
@@ -219,4 +213,4 @@ FilamentBracket:
     channel_pair_direction: "LEAN_FORWARD"
 """
 config = FilamentBracketConfig(yml)
-print(config.bracket_height)
+# print(config.bracket_height)
