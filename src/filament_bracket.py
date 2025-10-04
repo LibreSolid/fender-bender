@@ -55,8 +55,6 @@ from filament_bracket_config import (
     ChannelPairDirection,
 )
 
-from fb_library import twist_snap_connector, twist_snap_socket
-
 
 class FilamentBracket(Partomatic):
     """The partomatic for the filament bracket of the filament bank"""
@@ -566,50 +564,6 @@ class FilamentBracket(Partomatic):
                     stl_folder=self._config.stl_folder,
                 )
             )
-
-    def _twist_snap_socket(self) -> Part:
-        with BuildPart() as snap_socket:
-            add(
-                twist_snap_socket(
-                    connector_diameter=4.5,
-                    tolerance=0.12,
-                    snapfit_height=2,
-                    snapfit_radius_extension=2 * (2 / 3) - 0.06,
-                    wall_width=2,
-                    wall_depth=2,
-                )
-            )
-            with BuildPart():
-                with BuildSketch() as sketch:
-                    Circle(4.25)
-                with BuildSketch(
-                    Plane.XY.offset(-self._config.connector.length * 2)
-                ):
-                    RegularPolygon(
-                        4.5 + 2 * 4 / 3,
-                        side_count=6,
-                    )
-                loft()
-                Cylinder(
-                    radius=bracket._config.connector.tube.outer_radius,
-                    height=self._config.connector.length * 2,
-                    align=(Align.CENTER, Align.CENTER, Align.MAX),
-                    mode=Mode.SUBTRACT,
-                )
-            Cylinder(
-                radius=bracket._config.connector.tube.outer_radius,
-                height=1,
-                align=(Align.CENTER, Align.CENTER, Align.MIN),
-                mode=Mode.SUBTRACT,
-            )
-            Cylinder(
-                radius=bracket._config.connector.tube.inner_radius,
-                height=2,
-                align=(Align.CENTER, Align.CENTER, Align.MIN),
-                mode=Mode.SUBTRACT,
-            )
-        return snap_socket.part
-
 
 if __name__ == "__main__":
 
