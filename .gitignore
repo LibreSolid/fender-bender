@@ -6,6 +6,9 @@ step/*
 renders/*
 build-configs/*
 
+#ignore MacOS folder store
+.DS_Store
+
 # Unignore these config files
 !build-configs/release.conf
 !build-configs/dev.conf
