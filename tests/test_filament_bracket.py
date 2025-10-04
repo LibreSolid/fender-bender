@@ -19,9 +19,7 @@ class TestFilamentBracket:
             patch("ocp_vscode.save_screenshot"),
         ):
             loader = SourceFileLoader("__main__", "src/filament_bracket.py")
-            loader.exec_module(
-                module_from_spec(spec_from_loader(loader.name, loader))
-            )
+            loader.exec_module(module_from_spec(spec_from_loader(loader.name, loader)))
 
     def test_complete_connector_set(self, complete_connector_config_yaml):
         with (
@@ -66,9 +64,7 @@ class TestFilamentBracket:
         assert path is not None
         assert block.is_valid
 
-    def test_initialized_load_from_bender_config(
-        self, bender_config_yaml_threaded
-    ):
+    def test_initialized_load_from_bender_config(self, bender_config_yaml_threaded):
         bender_config = BenderConfig(bender_config_yaml_threaded)
         channels = FilamentChannels(bender_config.filament_bracket_config())
         assert channels._config.connector.thread_angle == 30
@@ -83,9 +79,7 @@ class TestFilamentBracket:
             patch("ocp_vscode.save_screenshot"),
         ):
             loader = SourceFileLoader("__main__", "src/filament_bracket.py")
-            loader.exec_module(
-                module_from_spec(spec_from_loader(loader.name, loader))
-            )
+            loader.exec_module(module_from_spec(spec_from_loader(loader.name, loader)))
 
     def test_channels_bare_execution(self):
         with (
@@ -97,9 +91,47 @@ class TestFilamentBracket:
             patch("ocp_vscode.save_screenshot"),
         ):
             loader = SourceFileLoader("__main__", "src/filament_channels.py")
-            loader.exec_module(
-                module_from_spec(spec_from_loader(loader.name, loader))
-            )
+            loader.exec_module(module_from_spec(spec_from_loader(loader.name, loader)))
+
+    def test_curved_filament_block_solid_with_twist_snap_extension(self):
+        """Test curved filament block solid with twist snap extension enabled"""
+        bender_config = BenderConfig()
+        config = bender_config.filament_bracket_config()
+        # Enable twist snap extension
+        config.connector.twist_snap_extension = True
+
+        channels = FilamentChannels(config)
+        block = channels.curved_filament_block_solid()
+
+        assert block is not None
+        assert block.is_valid
+        assert block.volume > 0
+        assert block.label == "curved filament path"
+
+    def test_curved_filament_block_solid_without_top_exit_fillet(self):
+        """Test curved filament block solid with top_exit_fillet=False"""
+        channels = FilamentChannels()
+        block = channels.curved_filament_block_solid(top_exit_fillet=False)
+
+        assert block is not None
+        assert block.is_valid
+        assert block.volume > 0
+        assert block.label == "curved filament path"
+
+    def test_curved_filament_block_solid_twist_snap_and_no_top_fillet(self):
+        """Test curved filament block solid with both twist snap extension and no top exit fillet"""
+        bender_config = BenderConfig()
+        config = bender_config.filament_bracket_config()
+        # Enable twist snap extension
+        config.connector.twist_snap_extension = True
+
+        channels = FilamentChannels(config)
+        block = channels.curved_filament_block_solid(top_exit_fillet=False)
+
+        assert block is not None
+        assert block.is_valid
+        assert block.volume > 0
+        assert block.label == "curved filament path"
 
 
 class TestFilamentBracketConfig:
@@ -115,9 +147,7 @@ class TestFilamentBracketConfig:
         config = FilamentBracketConfig(filament_bracket_config_yaml)
         assert config.bracket_height == pytest.approx(43.5)
 
-    def test_yaml_with_dict_config(
-        self, filament_bracket_config_yaml_with_dict
-    ):
+    def test_yaml_with_dict_config(self, filament_bracket_config_yaml_with_dict):
         config = FilamentBracketConfig(filament_bracket_config_yaml_with_dict)
         assert config.lock_pin.pin_length == pytest.approx(123)
 

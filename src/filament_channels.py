@@ -33,11 +33,14 @@ from build123d import (
 from ocp_vscode import Camera, show
 
 from bender_config import BenderConfig
-from filament_bracket_config import FilamentBracketConfig, ChannelPairDirection
+from filament_bracket_config import (
+    FilamentBracketConfig,
+    ChannelPairDirection,
+    ConnectorConfig,
+)
 from partomatic import AutomatablePart, Partomatic
 from fb_library import (
     twist_snap_connector,
-    twist_snap_socket,
     teardrop_sketch,
     teardrop_cylinder,
 )
@@ -57,6 +60,32 @@ class ChannelMode(Enum):
     COMPLETE = auto()
 
 
+def connector_threads(config: ConnectorConfig) -> Part:
+    """
+    returns the threads for the connector
+    """
+    with BuildPart() as threads:
+        TrapezoidalThread(
+            diameter=config.diameter,
+            pitch=config.thread_pitch,
+            length=config.length,
+            thread_angle=config.thread_angle,
+            external=False,
+            interference=config.thread_interference,
+            hand="right",
+            align=(Align.CENTER, Align.CENTER, Align.MIN),
+        )
+        Cylinder(
+            radius=config.radius,
+            height=config.length,
+            align=(Align.CENTER, Align.CENTER, Align.MIN),
+            mode=Mode.INTERSECT,
+        )
+    part = threads.part
+    part.label = "connector threads"
+    return part
+
+
 class FilamentChannels(Partomatic):
     """a partomatic for the filament ingress and egress channels"""
 
@@ -64,32 +93,6 @@ class FilamentChannels(Partomatic):
 
     channel_mode: ChannelMode = ChannelMode.COMPLETE
     render_threads: bool = True
-
-    def _connector_threads(self) -> Part:
-        """
-        returns the threads for the connector
-        """
-        with BuildPart() as threads:
-            TrapezoidalThread(
-                diameter=self._config.connector.diameter,
-                pitch=self._config.connector.thread_pitch,
-                length=self._config.connector.length,
-                thread_angle=self._config.connector.thread_angle,
-                external=False,
-                interference=self._config.connector.thread_interference,
-                hand="right",
-                align=(Align.CENTER, Align.CENTER, Align.MIN),
-            )
-            Cylinder(
-                radius=self._config.connector.radius,
-                height=self._config.connector.length
-                - self._config.minimum_thickness / 2,
-                align=(Align.CENTER, Align.CENTER, Align.MIN),
-                mode=Mode.INTERSECT,
-            )
-        part = threads.part
-        part.label = "connector threads"
-        return part
 
     def straight_filament_path_cut(self) -> Part:
         """
@@ -99,19 +102,14 @@ class FilamentChannels(Partomatic):
         with BuildPart(mode=Mode.PRIVATE) as tube:
             with BuildPart():
                 with BuildSketch(Plane.XY):
-                    Circle(
-                        radius=self._config.connector.tube.outer_diameter
-                        * 0.75
-                    )
+                    Circle(radius=self._config.connector.tube.outer_diameter * 0.75)
                     Rectangle(
                         width=self._config.connector.tube.outer_diameter * 2,
                         height=self._config.wheel.bearing.depth
                         + self._config.wheel.lateral_tolerance,
                         mode=Mode.INTERSECT,
                     )
-                with BuildSketch(
-                    Plane.XY.offset(self._config.filament_funnel_height)
-                ):
+                with BuildSketch(Plane.XY.offset(self._config.filament_funnel_height)):
                     # Circle(radius=self._config.connector.tube.inner_radius)
                     add(
                         teardrop_sketch(
@@ -121,14 +119,11 @@ class FilamentChannels(Partomatic):
                         )
                     )
                 loft()
-            with BuildPart(
-                Plane.XY.offset(self._config.filament_funnel_height)
-            ):
+            with BuildPart(Plane.XY.offset(self._config.filament_funnel_height)):
                 add(
                     teardrop_cylinder(
                         radius=self._config.connector.tube.outer_radius,
-                        peak_distance=self._config.connector.tube.outer_radius
-                        * 1.1,
+                        peak_distance=self._config.connector.tube.outer_radius * 1.1,
                         height=self._config.bracket_height
                         - self._config.filament_funnel_height
                         - self._config.connector.length,
@@ -158,8 +153,7 @@ class FilamentChannels(Partomatic):
 
             with BuildSketch(
                 Plane.XY.offset(
-                    self._config.bracket_height
-                    - self._config.minimum_thickness / 2
+                    self._config.bracket_height - self._config.minimum_thickness / 2
                 )
             ):
                 if self._config.connector.threaded:
@@ -200,7 +194,7 @@ class FilamentChannels(Partomatic):
                     ),
                     mode=Mode.SUBTRACT,
                 ):
-                    add(self._connector_threads())
+                    add(connector_threads(self._config.connector))
 
         with BuildPart(
             Location((0, 0, self._config.bracket_depth / 2), (-90, 0, 0))
@@ -232,7 +226,7 @@ class FilamentChannels(Partomatic):
         with BuildPart() as snap_connector:
             add(
                 twist_snap_connector(
-                    connector_diameter=4.5,
+                    connector_radius=4.5,
                     tolerance=0.12,
                     snapfit_height=2,
                     snapfit_radius_extension=2 * (2 / 3) - 0.12,
@@ -318,22 +312,15 @@ class FilamentChannels(Partomatic):
             with BuildPart() as inlet:
                 with BuildLine() as intake:
                     add(path.children[0])
-                with BuildSketch(
-                    Plane(origin=intake.line @ 0, z_dir=intake.line % 0)
-                ):
-                    Circle(
-                        radius=self._config.connector.tube.outer_diameter
-                        * 0.75
-                    )
+                with BuildSketch(Plane(origin=intake.line @ 0, z_dir=intake.line % 0)):
+                    Circle(radius=self._config.connector.tube.outer_diameter * 0.75)
                     Rectangle(
                         height=self._config.connector.tube.outer_diameter * 2,
                         width=self._config.wheel.bearing.depth
                         + self._config.wheel.lateral_tolerance,
                         mode=Mode.INTERSECT,
                     )
-                with BuildSketch(
-                    Plane(origin=intake.line @ 1, z_dir=intake.line % 1)
-                ):
+                with BuildSketch(Plane(origin=intake.line @ 1, z_dir=intake.line % 1)):
                     add(
                         teardrop_sketch(
                             radius=self._config.connector.tube.inner_radius,
@@ -389,8 +376,7 @@ class FilamentChannels(Partomatic):
                         add(
                             teardrop_sketch(
                                 radius=self._config.connector.radius,
-                                peak_distance=self._config.connector.radius
-                                * 1.1,
+                                peak_distance=self._config.connector.radius * 1.1,
                             )
                         )
                 sweep()
@@ -445,11 +431,9 @@ class FilamentChannels(Partomatic):
                     ).offset(self._config.minimum_thickness / 2),
                     mode=Mode.SUBTRACT,
                 ):
-                    add(self._connector_threads())
+                    add(connector_threads(self._config.connector))
 
-        return complete.part.move(
-            Location((0, 0, self._config.bracket_depth / 2))
-        )
+        return complete.part.move(Location((0, 0, self._config.bracket_depth / 2)))
 
     def curved_filament_block_solid(self, top_exit_fillet=True) -> Part:
         """
@@ -466,15 +450,11 @@ class FilamentChannels(Partomatic):
             with BuildSketch(
                 Plane(origin=curve.line @ 0, z_dir=curve.line % 0)
             ) as path_face:
-                Rectangle(
-                    self._config.bracket_depth, self._config.bracket_depth
-                )
+                Rectangle(self._config.bracket_depth, self._config.bracket_depth)
                 fillet(path_face.vertices(), self._config.fillet_radius)
             sweep()
             if self._config.connector.twist_snap_extension:
-                with BuildPart(
-                    Plane(origin=curve.line @ 1, z_dir=(curve.line % 1))
-                ):
+                with BuildPart(Plane(origin=curve.line @ 1, z_dir=(curve.line % 1))):
                     add(self._twist_snap_connector())
 
             if not top_exit_fillet:
@@ -491,15 +471,10 @@ class FilamentChannels(Partomatic):
                     )
                 sweep()
             fillet(
-                solid_path.faces()
-                .sort_by(Axis.Y)[0]
-                .edges()
-                .filter_by(Axis.X),
+                solid_path.faces().sort_by(Axis.Y)[0].edges().filter_by(Axis.X),
                 self._config.fillet_radius,
             )
-        part = solid_path.part.move(
-            Location((0, 0, self._config.bracket_depth / 2))
-        )
+        part = solid_path.part.move(Location((0, 0, self._config.bracket_depth / 2)))
         part.label = "curved filament path"
         return part
 
@@ -528,26 +503,18 @@ class FilamentChannels(Partomatic):
         right: Part
 
         self.parts.clear()
-        if (
-            self._config.channel_pair_direction
-            == ChannelPairDirection.LEAN_REVERSE
-        ):
+        if self._config.channel_pair_direction == ChannelPairDirection.LEAN_REVERSE:
             if self.channel_mode == ChannelMode.CUT_PATH:
                 left = self.curved_filament_path_cut().mirror(Plane.YZ)
             else:
-                left = self.curved_filament_block(top_exit_fillet=True).mirror(
-                    Plane.YZ
-                )
+                left = self.curved_filament_block(top_exit_fillet=True).mirror(Plane.YZ)
         else:
             if self.channel_mode == ChannelMode.CUT_PATH:
                 left = self.straight_filament_path_cut()
             else:
                 left = self.straight_filament_block()
         left = left.move(Location((-self._config.wheel.radius, 0, 0)))
-        if (
-            self._config.channel_pair_direction
-            == ChannelPairDirection.LEAN_FORWARD
-        ):
+        if self._config.channel_pair_direction == ChannelPairDirection.LEAN_FORWARD:
             if self.channel_mode == ChannelMode.CUT_PATH:
                 right = self.curved_filament_path_cut()
             else:
@@ -577,9 +544,8 @@ if __name__ == "__main__":
     if not config_path.exists() or not config_path.is_file():
         config_path = Path(__file__).parent / "../build-configs/dev.conf"
     bender_config = BenderConfig(config_path)
-    bender_config.connectors[0].twist_snap_extension = True
     bracket_config = bender_config.filament_bracket_config()
     channels = FilamentChannels(bracket_config)
-    channels.channel_mode = ChannelMode.CUT_PATH
+    channels.channel_mode = ChannelMode.COMPLETE
     channels.compile()
     channels.display()
