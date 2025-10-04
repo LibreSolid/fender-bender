@@ -133,6 +133,147 @@ class TestFilamentBracket:
         assert block.volume > 0
         assert block.label == "curved filament path"
 
+    def test_straight_filament_block_complete_mode(self):
+        """Test straight filament block with COMPLETE channel mode (covers lines 255-256)"""
+        from filament_channels import ChannelMode
+
+        channels = FilamentChannels()
+        channels.channel_mode = ChannelMode.COMPLETE
+        block = channels.straight_filament_block()
+
+        assert block is not None
+        assert block.is_valid
+        assert block.volume > 0
+        assert block.label == "filament path"
+
+    def test_straight_filament_block_with_twist_snap_extension(self):
+        """Test straight filament block with twist snap extension"""
+        from filament_channels import ChannelMode
+
+        bender_config = BenderConfig()
+        config = bender_config.filament_bracket_config()
+        config.connector.twist_snap_extension = True
+
+        channels = FilamentChannels(config)
+        channels.channel_mode = ChannelMode.COMPLETE
+        block = channels.straight_filament_block()
+
+        assert block is not None
+        assert block.is_valid
+        assert block.volume > 0
+        assert block.label == "filament path"
+
+    def test_straight_filament_block_solid_mode(self):
+        """Test straight filament block with SOLID channel mode"""
+        from filament_channels import ChannelMode
+
+        channels = FilamentChannels()
+        channels.channel_mode = ChannelMode.SOLID
+        block = channels.straight_filament_block()
+
+        assert block is not None
+        assert block.is_valid
+        assert block.volume > 0
+        assert block.label == "filament path"
+
+    def test_curved_filament_block_complete_mode(self):
+        """Test curved filament block with COMPLETE channel mode"""
+        from filament_channels import ChannelMode
+
+        channels = FilamentChannels()
+        channels.channel_mode = ChannelMode.COMPLETE
+        block = channels.curved_filament_block()
+
+        assert block is not None
+        assert block.is_valid
+        assert block.volume > 0
+        assert block.label == "filament path"
+
+    def test_curved_filament_block_solid_mode(self):
+        """Test curved filament block with SOLID channel mode"""
+        from filament_channels import ChannelMode
+
+        channels = FilamentChannels()
+        channels.channel_mode = ChannelMode.SOLID
+        block = channels.curved_filament_block()
+
+        assert block is not None
+        assert block.is_valid
+        assert block.volume > 0
+        assert block.label == "filament path"
+
+    def test_compile_method_lean_forward(self):
+        """Test compile method with LEAN_FORWARD configuration"""
+        from filament_channels import ChannelMode
+        from filament_bracket_config import ChannelPairDirection
+
+        bender_config = BenderConfig()
+        config = bender_config.filament_bracket_config()
+        config.channel_pair_direction = ChannelPairDirection.LEAN_FORWARD
+
+        channels = FilamentChannels(config)
+        channels.channel_mode = ChannelMode.COMPLETE
+        channels.compile()
+
+        assert len(channels.parts) == 1
+        assert channels.parts[0].part.label == "filament channels"
+
+    def test_compile_method_lean_reverse(self):
+        """Test compile method with LEAN_REVERSE configuration"""
+        from filament_channels import ChannelMode
+        from filament_bracket_config import ChannelPairDirection
+
+        bender_config = BenderConfig()
+        config = bender_config.filament_bracket_config()
+        config.channel_pair_direction = ChannelPairDirection.LEAN_REVERSE
+
+        channels = FilamentChannels(config)
+        channels.channel_mode = ChannelMode.COMPLETE
+        channels.compile()
+
+        assert len(channels.parts) == 1
+        assert channels.parts[0].part.label == "filament channels"
+
+    def test_compile_method_straight(self):
+        """Test compile method with STRAIGHT configuration"""
+        from filament_channels import ChannelMode
+        from filament_bracket_config import ChannelPairDirection
+
+        bender_config = BenderConfig()
+        config = bender_config.filament_bracket_config()
+        config.channel_pair_direction = ChannelPairDirection.STRAIGHT
+
+        channels = FilamentChannels(config)
+        channels.channel_mode = ChannelMode.COMPLETE
+        channels.compile()
+
+        assert len(channels.parts) == 1
+        assert channels.parts[0].part.label == "filament channels"
+
+    def test_compile_method_cut_path_mode(self):
+        """Test compile method with CUT_PATH channel mode"""
+        from filament_channels import ChannelMode
+
+        channels = FilamentChannels()
+        channels.channel_mode = ChannelMode.CUT_PATH
+        channels.compile()
+
+        assert len(channels.parts) == 1
+        assert channels.parts[0].part.label == "filament channels"
+
+    def test_connector_threads_function(self):
+        """Test the standalone connector_threads function"""
+        from filament_channels import connector_threads
+
+        bender_config = BenderConfig()
+        config = bender_config.filament_bracket_config()
+
+        threads = connector_threads(config.connector)
+
+        assert threads is not None
+        assert threads.is_valid
+        assert threads.volume > 0
+
 
 class TestFilamentBracketConfig:
 
