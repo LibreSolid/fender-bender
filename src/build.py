@@ -1,4 +1,4 @@
-""" Build and export all parts required for assebly for each configuration file in the build-configs directory """
+"""Build and export all parts required for assebly for each configuration file in the build-configs directory"""
 
 from argparse import ArgumentParser
 from importlib.machinery import SourceFileLoader
@@ -146,13 +146,9 @@ def partomate_alt_guidewall(
 
 
 def build_wheel(bender_config: BenderConfig):
-    wheel = FilamentWheel(
-        bender_config.wheel, stl_folder=bender_config.stl_folder
-    )
+    wheel = FilamentWheel(bender_config.wheel, stl_folder=bender_config.stl_folder)
     wheel.partomate()
-    wheel._config.bearing.print_in_place = (
-        not wheel._config.bearing.print_in_place
-    )
+    wheel._config.bearing.print_in_place = not wheel._config.bearing.print_in_place
     description = (
         "print-in-place-bearing"
         if wheel._config.bearing.print_in_place
@@ -189,9 +185,7 @@ args = parser.parse_args()
 
 build_configs_dir = (Path(__file__).parent / "../build-configs").resolve()
 # Get the list of configuration files
-conf_files = [
-    conf_file.resolve() for conf_file in build_configs_dir.glob("*.conf")
-]
+conf_files = [conf_file.resolve() for conf_file in build_configs_dir.glob("*.conf")]
 
 # Filter the configuration files based on the provided stem
 if args.config:
@@ -205,9 +199,7 @@ if args.config:
     ]
 
 
-def build_hanger_set(
-    bender_config: BenderConfig, override_filament_count=None
-):
+def build_hanger_set(bender_config: BenderConfig, override_filament_count=None):
     hanger_bender_config = deepcopy(bender_config)
     if override_filament_count is not None:
         hanger_bender_config.filament_count = override_filament_count
@@ -219,9 +211,7 @@ def build_hanger_set(
             / f"alt-{override_filament_count}-filament-parts"
         )
         hanging_bracket_config.file_prefix = "alt-"
-        hanging_bracket_config.file_suffix = (
-            f"-{override_filament_count}-filament"
-        )
+        hanging_bracket_config.file_suffix = f"-{override_filament_count}-filament"
 
     HangingBracket(hanging_bracket_config).partomate()
 
@@ -257,9 +247,7 @@ def build_hanger_set(
             (Path(hanging_bracket_config.stl_folder) / "alt-frame-hangers")
         )
         wall_config.file_prefix = "alt-"
-        wall_config.file_suffix = (
-            f"{hanging_bracket_config.file_suffix}-wall-mount"
-        )
+        wall_config.file_suffix = f"{hanging_bracket_config.file_suffix}-wall-mount"
         HangingBracket(wall_config).partomate()
 
         surface_config = deepcopy(hanging_bracket_config)
@@ -284,16 +272,12 @@ def build_hangers(bender_config):
         return
 
     for count in bender_config.alternate_filament_counts:
-        print(
-            f"\t\t generating hanger for {count} filament{"s" if count > 1 else ""}"
-        )
+        print(f"\t\t generating hanger for {count} filament{"s" if count > 1 else ""}")
 
         build_hanger_set(bender_config, override_filament_count=count)
 
 
-def build_alt_style_frame_set(
-    frame_config: FrameConfig, frame_style=FrameStyle
-):
+def build_alt_style_frame_set(frame_config: FrameConfig, frame_style=FrameStyle):
     alt_frame_config = deepcopy(frame_config)
     alt_frame_config.frame_style = frame_style
     alt_frame_config.stl_folder = str(
@@ -361,9 +345,7 @@ def build_frames(bender_config: BenderConfig):
     print(f"\t\t generating default frame")
     build_frame_set(bender_config)
     for count in bender_config.alternate_filament_counts:
-        print(
-            f"\t\t generating frame for {count} filament{"s" if count > 1 else ""}"
-        )
+        print(f"\t\t generating frame for {count} filament{"s" if count > 1 else ""}")
         build_frame_set(bender_config, override_filament_count=count)
 
 
@@ -388,7 +370,9 @@ def build_brackets(bender_config: BenderConfig):
                     / f"alt-brackets-{nice_direction_name(direction)}"
                 )
                 bracket._config.file_prefix = "alt-"
-                bracket._config.file_suffix = f"{bracket._config.file_suffix}-{nice_direction_name(direction)}"
+                bracket._config.file_suffix = (
+                    f"{bracket._config.file_suffix}-{nice_direction_name(direction)}"
+                )
                 bracket._config.block_pin_generation = True
             if connector_index > 0:
                 bracket._config.block_pin_generation = True
@@ -397,13 +381,13 @@ def build_brackets(bender_config: BenderConfig):
                     / f"alt-brackets-{nice_direction_name(direction)}-alternate-connectors"
                 )
                 bracket._config.file_prefix = "alt-"
-                bracket._config.file_suffix = f"{bracket._config.file_suffix}{dash_prefix(connector.file_suffix)}"
+                bracket._config.file_suffix = (
+                    f"{bracket._config.file_suffix}{dash_prefix(connector.file_suffix)}"
+                )
             bracket.partomate()
 
 
-def build_guidewall_set(
-    bender_config: BenderConfig, override_filament_count=None
-):
+def build_guidewall_set(bender_config: BenderConfig, override_filament_count=None):
     guidewall_config = bender_config.guidewall_config
     if override_filament_count is not None:
         guidewall_config.section_count = override_filament_count
@@ -428,13 +412,9 @@ def build_guidewall_set(
             bender_config, WallStyle.DRYBOX, override_filament_count
         )
     if bender_config.wall_style != WallStyle.SOLID:
-        partomate_alt_guidewall(
-            bender_config, WallStyle.SOLID, override_filament_count
-        )
+        partomate_alt_guidewall(bender_config, WallStyle.SOLID, override_filament_count)
     if bender_config.wall_style != WallStyle.HEX:
-        partomate_alt_guidewall(
-            bender_config, WallStyle.HEX, override_filament_count
-        )
+        partomate_alt_guidewall(bender_config, WallStyle.HEX, override_filament_count)
 
 
 def build_walls(bender_config: BenderConfig):
