@@ -395,23 +395,24 @@ class FilamentBracket(Partomatic):
         with BuildPart() as constructed_bracket:
             add(self.bottom_bracket_block())
 
+            Cylinder(
+                radius=self._config.wheel.radius + self._config.wheel.radial_tolerance,
+                height=self._config.bracket_depth,
+                align=(Align.CENTER, Align.CENTER, Align.MIN),
+                mode=Mode.SUBTRACT,
+            )
+            cutchannels = FilamentChannels(self._config)
+            cutchannels.channel_mode = ChannelMode.CUT_PATH
+            cutchannels.render_threads = not force_draft
+            cutchannels.compile()
+            add(cutchannels.parts[0].part, mode=Mode.SUBTRACT)
+            add(
+                self._top_cut_template(self._config.tolerance)
+                .mirror()
+                .move(Location((0, 0, self._config.bracket_depth))),
+                mode=Mode.SUBTRACT,
+            )
             with BuildPart(mode=Mode.SUBTRACT):
-                cutchannels = FilamentChannels(self._config)
-                cutchannels.channel_mode = ChannelMode.CUT_PATH
-                cutchannels.render_threads = not force_draft
-                cutchannels.compile()
-                add(cutchannels.parts[0].part)
-                add(
-                    self._top_cut_template(self._config.tolerance)
-                    .mirror()
-                    .move(Location((0, 0, self._config.bracket_depth)))
-                )
-                Cylinder(
-                    radius=self._config.wheel.radius
-                    + self._config.wheel.radial_tolerance,
-                    height=self._config.bracket_depth,
-                    align=(Align.CENTER, Align.CENTER, Align.MIN),
-                )
                 with Locations(
                     Location(
                         (
@@ -557,13 +558,6 @@ if __name__ == "__main__":
 
     bracket._config.channel_pair_direction = ChannelPairDirection.LEAN_REVERSE
 
-    # with BuildPart() as socket:
-    #     add(bracket._twist_snap_socket())
-    # show(socket.part, reset_camera=Camera.KEEP)
-    # export_stl(
-    #     socket.part,
-    #     str(Path(__file__).parent / "../stl" / "twist-snap-socket.stl"),
-    # )
     bracket.compile()
     bracket.display()
     bracket.export_stls()
