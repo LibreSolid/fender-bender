@@ -81,8 +81,7 @@ class FilamentBracket(Partomatic):
         returns a single spoke part for the filament wheel
         """
         spoke_outer_radius = (
-            self._config.wheel_guide_inner_radius / 2
-            + self._config.spoke_thickness
+            self._config.wheel_guide_inner_radius / 2 + self._config.spoke_thickness
         )
         spoke_shift = spoke_outer_radius - self._config.spoke_thickness
         with BuildPart() as spoke:
@@ -185,14 +184,8 @@ class FilamentBracket(Partomatic):
         with BuildPart() as cut:
             with BuildSketch():
                 add(self._top_cut_shape(-tolerance))
-            with BuildSketch(
-                Plane.XY.offset(self._config.wheel_support_height)
-            ):
-                add(
-                    self._top_cut_shape(
-                        -tolerance - self._config.wheel_support_height
-                    )
-                )
+            with BuildSketch(Plane.XY.offset(self._config.wheel_support_height)):
+                add(self._top_cut_shape(-tolerance - self._config.wheel_support_height))
             loft()
         return cut.part
 
@@ -289,14 +282,9 @@ class FilamentBracket(Partomatic):
                 dir=(1, 0, 0),
             )
             edge_set = (
-                clip.faces()
-                .sort_by(Axis.X)[-1]
-                .edges()
-                .filter_by(GeomType.CIRCLE)
+                clip.faces().sort_by(Axis.X)[-1].edges().filter_by(GeomType.CIRCLE)
             )
-            fillet(
-                edge_set, clip.part.max_fillet(edge_set, max_iterations=100)
-            )
+            fillet(edge_set, clip.part.max_fillet(edge_set, max_iterations=100))
             with BuildPart(
                 Location(
                     (
@@ -310,8 +298,7 @@ class FilamentBracket(Partomatic):
             ):
                 Cylinder(
                     radius=(
-                        self._config.frame_clip_width
-                        - self._config.fillet_radius * 2
+                        self._config.frame_clip_width - self._config.fillet_radius * 2
                     )
                     / 3.5,
                     height=self._config.minimum_structural_thickness + inset,
@@ -346,9 +333,7 @@ class FilamentBracket(Partomatic):
             add(blockchannels.parts[0].part)
             if LockStyle.CLIP in self._config.frame_lock_style:
                 with BuildPart(
-                    Location(
-                        (0, 0, self._config.bracket_depth / 2), (-90, 0, 0)
-                    ),
+                    Location((0, 0, self._config.bracket_depth / 2), (-90, 0, 0)),
                     mode=Mode.SUBTRACT,
                 ):
                     add(
@@ -394,9 +379,7 @@ class FilamentBracket(Partomatic):
                     align=(Align.CENTER, Align.CENTER, Align.MIN),
                 )
             )
-            with BuildPart(
-                Location((0, 0, -self._config.bracket_depth / 2))
-            ) as guide:
+            with BuildPart(Location((0, 0, -self._config.bracket_depth / 2))) as guide:
                 Cylinder(
                     radius=self._config.bracket_depth,
                     height=base_unit * 2,
@@ -463,9 +446,7 @@ class FilamentBracket(Partomatic):
                     add(self._pin_channel())
             if LockStyle.CLIP in self._config.frame_lock_style:
                 with BuildPart(
-                    Location(
-                        (0, 0, self._config.bracket_depth / 2), (-90, 0, 0)
-                    ),
+                    Location((0, 0, self._config.bracket_depth / 2), (-90, 0, 0)),
                     mode=Mode.SUBTRACT,
                 ):
                     add(self.bracket_clip(inset=-self._config.tolerance / 2))
@@ -536,8 +517,7 @@ class FilamentBracket(Partomatic):
                 f"filament-bracket-top",
                 display_location=Location(
                     (
-                        -self._config.bracket_width
-                        - self._config.bracket_depth / 2,
+                        -self._config.bracket_width - self._config.bracket_depth / 2,
                         0,
                         0,
                     )
@@ -565,6 +545,7 @@ class FilamentBracket(Partomatic):
                 )
             )
 
+
 if __name__ == "__main__":
 
     config_path = Path(__file__).parent / "../build-configs/debug.conf"
@@ -572,9 +553,7 @@ if __name__ == "__main__":
         config_path = Path(__file__).parent / "../build-configs/dev.conf"
     bender_config = BenderConfig(config_path)
 
-    bracket = FilamentBracket(
-        bender_config.filament_bracket_config(connector_index=0)
-    )
+    bracket = FilamentBracket(bender_config.filament_bracket_config(connector_index=0))
 
     bracket._config.channel_pair_direction = ChannelPairDirection.LEAN_REVERSE
 
