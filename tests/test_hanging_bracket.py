@@ -16,9 +16,7 @@ class TestBrackets:
             patch("build123d.export_stl"),
         ):
             loader = SourceFileLoader("__main__", "src/hanging_bracket.py")
-            loader.exec_module(
-                module_from_spec(spec_from_loader(loader.name, loader))
-            )
+            loader.exec_module(module_from_spec(spec_from_loader(loader.name, loader)))
 
     def test_hanging_bracket(self):
         bracket = HangingBracket()
@@ -31,15 +29,15 @@ class TestBrackets:
     def test_desk_bracket_nut(self):
         bracket = HangingBracket()
         bracket._config.bracket_style = HangingBracketStyle.SURFACE_MOUNT
-        bracket._config.heatsink_desk_nut = False
+        bracket._config.heatsink_desk_nut = True
         bracket.compile()
         assert len(bracket.parts) == 1
         assert bracket.parts[0].part.is_valid()
 
-    def test_desk_bracket_nut(self):
+    def test_desk_bracket_no_nut(self):
         bracket = HangingBracket()
         bracket._config.bracket_style = HangingBracketStyle.SURFACE_MOUNT
-        bracket._config.heatsink_desk_nut = True
+        bracket._config.heatsink_desk_nut = False
         bracket.compile()
         assert len(bracket.parts) == 1
         assert bracket.parts[0].part.is_valid()
@@ -75,9 +73,5 @@ class TestCutTemplate:
             patch("pathlib.Path.is_dir"),
             patch("build123d.export_stl"),
         ):
-            loader = SourceFileLoader(
-                "__main__", "src/wall_hanger_cut_template.py"
-            )
-            loader.exec_module(
-                module_from_spec(spec_from_loader(loader.name, loader))
-            )
+            loader = SourceFileLoader("__main__", "src/wall_hanger_cut_template.py")
+            loader.exec_module(module_from_spec(spec_from_loader(loader.name, loader)))

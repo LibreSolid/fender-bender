@@ -15,12 +15,10 @@ class TestConfig:
         assert wheel_config.radius == wheel_config.diameter / 2
         assert wheel_config.bearing.radius == wheel_config.bearing.diameter / 2
         assert (
-            wheel_config.bearing.inner_radius
-            == wheel_config.bearing.inner_diameter / 2
+            wheel_config.bearing.inner_radius == wheel_config.bearing.inner_diameter / 2
         )
         assert (
-            wheel_config.bearing.shelf_radius
-            == wheel_config.bearing.shelf_diameter / 2
+            wheel_config.bearing.shelf_radius == wheel_config.bearing.shelf_diameter / 2
         )
 
     def test_wheelconfig_defaults(self, wheel_config):
@@ -39,6 +37,7 @@ class TestConfig:
         assert cfg.bearing.inner_diameter == 0.1
         assert cfg.bearing.shelf_diameter == 0.2
         assert cfg.bearing.depth == 1
+        assert cfg.depth == 1
 
     def test_wheelconfig_load_bearing_dict_yaml_str(
         self,
@@ -69,6 +68,7 @@ class TestConfig:
 
 
 class TestWheel:
+
     def test_partomate(self):
         fw = FilamentWheel()
         with (
@@ -80,6 +80,22 @@ class TestWheel:
             patch("filament_bracket.save_screenshot"),
         ):
             fw.partomate()
+        assert fw.parts[0].part.volume > 0
+        assert fw.parts[0].part.is_valid()
+
+    def test_print_in_place_bearing(self):
+        config = WheelConfig()
+        config.bearing.print_in_place = True
+        fw = FilamentWheel(config)
+        with (
+            patch("build123d.export_stl"),
+            patch("pathlib.Path.mkdir"),
+            patch("pathlib.Path.exists"),
+            patch("pathlib.Path.is_dir"),
+            patch("ocp_vscode.show"),
+            patch("filament_bracket.save_screenshot"),
+        ):
+            fw.compile()
         assert fw.parts[0].part.volume > 0
         assert fw.parts[0].part.is_valid()
 
@@ -110,6 +126,4 @@ class TestWheel:
             patch("ocp_vscode.save_screenshot"),
         ):
             loader = SourceFileLoader("__main__", "src/filament_wheel.py")
-            loader.exec_module(
-                module_from_spec(spec_from_loader(loader.name, loader))
-            )
+            loader.exec_module(module_from_spec(spec_from_loader(loader.name, loader)))

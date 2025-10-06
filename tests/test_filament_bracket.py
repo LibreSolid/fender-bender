@@ -6,6 +6,7 @@ from filament_channels import FilamentChannels
 from filament_bracket import FilamentBracket
 from bender_config import BenderConfig
 from filament_bracket_config import FilamentBracketConfig
+from dataclasses import fields, field, MISSING
 
 
 class TestFilamentBracket:
@@ -303,3 +304,22 @@ class TestFilamentBracketConfig:
             }
         )
         assert config.lock_pin.pin_length == pytest.approx(123)
+
+    def test_default_config_field_without_default(self):
+        """Test that _default_config raises ValueError when a field has no default"""
+        config = FilamentBracketConfig()
+
+        original_fields = fields(config)
+
+        mock_field = field()
+        mock_field.name = "mock_field"
+        mock_field.default = MISSING
+        mock_field.default_factory = MISSING
+
+        modified_fields = list(original_fields) + [mock_field]
+
+        with patch("filament_bracket_config.fields", return_value=modified_fields):
+            with pytest.raises(
+                ValueError, match="Field mock_field has no default value"
+            ):
+                config._default_config()

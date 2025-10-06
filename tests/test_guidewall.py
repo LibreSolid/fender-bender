@@ -6,6 +6,7 @@ from pathlib import Path
 
 from guidewall_config import GuidewallConfig
 from guidewall import Guidewall
+from sidewall_config import WallStyle
 
 
 class TestConfig:
@@ -36,9 +37,14 @@ class TestGuidewall:
             patch("ocp_vscode.save_screenshot"),
         ):
             loader = SourceFileLoader("__main__", "src/guidewall.py")
-            loader.exec_module(
-                module_from_spec(spec_from_loader(loader.name, loader))
-            )
+            loader.exec_module(module_from_spec(spec_from_loader(loader.name, loader)))
+
+    def test_drybox(self):
+        config = GuidewallConfig()
+        config.wall_style = WallStyle.DRYBOX
+        guidewall = Guidewall(config)
+        guidewall.compile()
+        assert guidewall.parts[0].part.is_valid()
 
     def test_none_stl_folder(self):
         with (

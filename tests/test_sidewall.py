@@ -5,7 +5,7 @@ from bender_config import BenderConfig
 from pathlib import Path
 import pytest
 
-from sidewall_config import SidewallConfig
+from sidewall_config import SidewallConfig, WallStyle
 from sidewall import Sidewall
 
 
@@ -16,9 +16,7 @@ class TestConfig:
         sw_config = bender_config.sidewall_config
         assert isinstance(sw_config, SidewallConfig)
         assert sw_config.top_diameter == sw_config.top_radius * 2
-        assert (
-            sw_config.straight_length == bender_config.sidewall_straight_depth
-        )
+        assert sw_config.straight_length == bender_config.sidewall_straight_depth
         assert sw_config.complete_length == pytest.approx(168.0677324554909)
 
 
@@ -32,13 +30,25 @@ class TestSidewall:
             patch("build123d.export_stl"),
         ):
             loader = SourceFileLoader("__main__", "src/sidewall.py")
-            loader.exec_module(
-                module_from_spec(spec_from_loader(loader.name, loader))
-            )
+            loader.exec_module(module_from_spec(spec_from_loader(loader.name, loader)))
 
     def test_double_ended_sidewall(self):
         sidewall = Sidewall()
         assert sidewall._base_sidewall_shape(end_count=2).is_valid()
+
+    def test_solid_sidewall(self):
+        config = SidewallConfig()
+        config.wall_style = WallStyle.SOLID
+        sidewall = Sidewall()
+        sidewall.compile()
+        assert sidewall.parts[0].part.is_valid()
+
+    def test_dry_hex_sidewall(self):
+        config = SidewallConfig()
+        config.wall_style = WallStyle.DRY_HEX
+        sidewall = Sidewall(config)
+        sidewall.compile()
+        assert sidewall.parts[0].part.is_valid()
 
     def test_none_stl_folder(self):
         with (
@@ -61,6 +71,4 @@ class TestTongueGroove:
             patch("build123d.export_stl"),
         ):
             loader = SourceFileLoader("__main__", "src/tongue_groove.py")
-            loader.exec_module(
-                module_from_spec(spec_from_loader(loader.name, loader))
-            )
+            loader.exec_module(module_from_spec(spec_from_loader(loader.name, loader)))
