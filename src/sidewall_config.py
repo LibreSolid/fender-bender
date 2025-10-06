@@ -10,6 +10,7 @@ class WallStyle(Enum):
     SOLID = auto()
     DRYBOX = auto()
     HEX = auto()
+    DRY_HEX = auto()
 
 
 class SidewallConfig(PartomaticConfig):

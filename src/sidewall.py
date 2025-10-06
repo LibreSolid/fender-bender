@@ -76,20 +76,17 @@ class Sidewall(Partomatic):
 
     def _outer_sidewall_shape(self) -> Sketch:
         return self._base_sidewall_shape(
-            top_radius=self._config.top_radius
-            - self._config.wall_thickness * 0.25,
+            top_radius=self._config.top_radius - self._config.wall_thickness * 0.25,
             extension_length=self._config.top_extension
             + self._config.wall_thickness * 0.25,
             width=self._config.sidewall_width - self._config.wall_thickness,
-            straight_length=self._config.straight_length
-            - self._config.wall_thickness,
+            straight_length=self._config.straight_length - self._config.wall_thickness,
             end_count=self._config.end_count,
         )
 
     def _center_sidewall_shape(self) -> Sketch:
         return self._base_sidewall_shape(
-            top_radius=self._config.top_radius
-            + self._config.wall_thickness * 0.25,
+            top_radius=self._config.top_radius + self._config.wall_thickness * 0.25,
             extension_length=self._config.top_extension
             - self._config.wall_thickness * 0.25,
             width=self._config.sidewall_width,
@@ -189,8 +186,7 @@ class Sidewall(Partomatic):
                 (
                     0,
                     -self._config.straight_length / 2
-                    + self._config.wall_thickness
-                    * 0.5,  # should go away in v2
+                    + self._config.wall_thickness * 0.5,  # should go away in v2
                     0,
                 )
             )
@@ -200,15 +196,13 @@ class Sidewall(Partomatic):
                     (
                         0,
                         -self._config.straight_length / 2
-                        + self._config.wall_thickness
-                        * 0.5,  # should go away in v2
+                        + self._config.wall_thickness * 0.5,  # should go away in v2
                         self._config.wall_thickness,
                     )
                 )
             ):
                 with GridLocations(
-                    self._config.sidewall_width
-                    - self._config.wall_thickness * 2,
+                    self._config.sidewall_width - self._config.wall_thickness * 2,
                     self._config.straight_length / 2,
                     2,
                     2,
@@ -254,11 +248,11 @@ class Sidewall(Partomatic):
         part.label = f"-sidewall{"-reinforced" if reinforced else ""}{"-solid" if solid else ""}{"-drybox" if dry else ""}"
         return part
 
-    def _filename(self) -> str:
-        prefix = ""
-        if self._config.reinforced:
-            prefix = "{prefix}reinforced "
-        prefix = "{prefix}sidewall"
+    # def _filename(self) -> str:
+    #     prefix = ""
+    #     if self._config.reinforced:
+    #         prefix = "{prefix}reinforced "
+    #     prefix = "{prefix}sidewall"
 
     def compile(self):
         """
@@ -270,8 +264,10 @@ class Sidewall(Partomatic):
             AutomatablePart(
                 self._sidewall(
                     reinforced=True,
-                    solid=self._config.wall_style == WallStyle.SOLID,
-                    dry=self._config.wall_style == WallStyle.DRYBOX,
+                    solid=(self._config.wall_style == WallStyle.SOLID),
+                    dry=(
+                        self._config.wall_style in [WallStyle.DRYBOX, WallStyle.DRY_HEX]
+                    ),
                 ),
                 "wall-side-reinforced",
                 display_location=Location(
