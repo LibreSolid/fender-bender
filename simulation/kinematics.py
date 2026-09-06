@@ -1,12 +1,14 @@
 """How the buffer moves. Written over `solid_node.math` so one formula
 computes on numbers in tests and builds the viewer's expression on symbolic
-time and drivers. The viewer's expression language has arithmetic and the
-`solid_node.math` functions but no `min`, `max` or `floor`, so a clamp is
-built from `sqrt`: |x| = sqrt(x * x) and clamp(x, 0, 1) = (|x| - |x - 1| + 1) / 2.
-Defines no node.
+time and drivers. Defines no node.
+
+The clamp, the waypoint path and the pulse are the framework's now. This
+file used to build all three out of `sqrt(x * x)`, believing the viewer's
+expression language had no `min`, `max` or `floor`; it has all three, and
+OpenSCAD has had them all along.
 """
 
-from solid_node.math import sin, sqrt
+from solid_node.math import abs, bump, clamp01, piecewise
 
 DEMO_SLACK = 150.0      # mm, the slack each channel reaches on the timeline
 PIN_CLEAR = 92.0        # mm, the pin draw at which it has left the frame
@@ -30,26 +32,14 @@ RELEASE_WAYPOINTS = (
 )
 
 
-def absolute(x):
-    return sqrt(x * x)
-
-
-def clamp01(x):
-    """x clamped to [0, 1]."""
-    return (absolute(x) - absolute(x - 1) + 1) / 2
-
-
 def indicator(a, b):
-    """1 when the integers a and b are equal, 0 otherwise."""
-    return 1 - clamp01(absolute(a - b))
+    """1 when the integers a and b are equal, 0 otherwise.
 
-
-def piecewise(x, points):
-    """Linear interpolation through (x, y) points, clamped at the ends."""
-    x0, y = points[0]
-    for (xa, ya), (xb, yb) in zip(points, points[1:]):
-        y = y + (yb - ya) * clamp01((x - xa) / (xb - xa))
-    return y
+    Local, and staying local: for anything but integers this is a
+    triangular hat rather than an indicator, and that precondition is this
+    file's to keep, not the framework's to bless.
+    """
+    return 1 - clamp01(abs(a - b))
 
 
 def release_pose(lift):
@@ -69,12 +59,6 @@ def wheel_angle(slack, wheel_radius):
     """Degrees the wheel has turned when `slack` mm hangs in the loop:
     both legs lengthen together, so 2 * slack of filament passed over it."""
     return -2.0 * slack / wheel_radius * 180.0 / 3.14159265358979
-
-
-def bump(u):
-    """A smooth 0-1-0 pulse over u in [0, 1], zero outside."""
-    s = sin(180.0 * clamp01(u))
-    return s * s
 
 
 def demo_slack(time, count, index):
