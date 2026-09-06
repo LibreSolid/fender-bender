@@ -16,7 +16,6 @@ import trimesh
 from solid_node.simulation import ScenarioTest
 from solid_node.test import TestCase, testing_steps
 
-from .contracts import assert_no_interference
 
 from .fender_bender import SLACK_RANGE, FenderBender
 from .kinematics import DEMO_SLACK, LIFT_MAX
@@ -83,7 +82,7 @@ class FenderBenderTest(TestCase):
     def test_assembly_integrity(self):
         self.parked_guidewalls()
         try:
-            assert_no_interference(self, self.node)
+            self.assertNoSolidInterference(self.node)
         finally:
             self.unpark_guidewalls()
         frames = (self.node.frame.top, self.node.frame.connector,
@@ -96,13 +95,10 @@ class FenderBenderTest(TestCase):
                     self.assertNotIntersecting(guide, solid)
                 self.assertNotIntersecting(guide, self.node.loops[index])
 
-    # Gap: `assertAssemblySupported(self.node)` cannot run on this model.
-    # The framework reads every printed solid through a Manifold cache and
-    # refuses the upstream frames' and walls' STLs, which trimesh calls
-    # non-watertight (T-junctions between tessellated faces) although
-    # Manifold accepts them with matching volumes. The wall-frame-joint
-    # support requirement is therefore unverified until the framework's
-    # watertight gate trusts Manifold's verdict; recorded in the design.
+    def test_the_stack_stands_under_gravity(self):
+        """Every printed solid rests on the frame below it or on the
+        ground: the wall-frame-joint support requirement."""
+        self.assertAssemblySupported(self.node)
 
     # -- bracket-frame-seat -----------------------------------------------
 

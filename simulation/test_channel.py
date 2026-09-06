@@ -12,7 +12,6 @@ import trimesh
 
 from solid_node.test import TestCase
 
-from .contracts import assert_no_interference
 
 from .channel import Channel
 from .config import (BEARING_DEPTH, BEARING_SEAT_DIAMETER,
@@ -41,9 +40,7 @@ class ChannelTest(TestCase):
         self.assertNoDisconnectedSolids(self.node)
 
     def test_assembly_integrity(self):
-        # Pairwise on the exact solids: the bottom bracket's STL trips the
-        # framework's watertight gate (see `contracts`).
-        assert_no_interference(self, self.node)
+        self.assertNoSolidInterference(self.node)
 
     # -- the bearing between the shelves ---------------------------------
 

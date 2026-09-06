@@ -12,7 +12,6 @@ by the measured snap volume separately.
 
 from solid_node.test import TestCase
 
-from .contracts import assert_no_interference
 
 from .frame import Frame
 
@@ -48,7 +47,7 @@ class FrameTest(TestCase):
     def test_assembly_integrity(self):
         self.parked_guidewalls()
         try:
-            assert_no_interference(self, self.node)
+            self.assertNoSolidInterference(self.node)
         finally:
             self.unpark_guidewalls()
         for guide in self.node.guidewalls:
@@ -100,4 +99,4 @@ class FrameTest(TestCase):
         self.assertEqual(len(three.outer_walls), 4)
         for guide in three.guidewalls:
             guide.translate(FAR_AWAY)
-        assert_no_interference(self, three)
+        self.assertNoSolidInterference(three)

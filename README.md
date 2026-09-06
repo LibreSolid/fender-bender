@@ -106,7 +106,6 @@ the printed parts, all are recorded in the specs:
 - The bracket post (6.1 mm) is a 0.05 mm-per-side press fit into the
   MR126's 6.0 mm bore; the model's bearing bore follows the post.
 
-Two framework limits bound the evidence: trimesh calls seven of the
-upstream STLs non-watertight (Manifold accepts them), so the whole-model
-interference check is pairwise exact rather than the framework's, and the
-support-under-gravity contract cannot run on this model.
+The whole-model interference and support-under-gravity contracts are the
+framework's own; trimesh calls seven of the upstream STLs non-watertight,
+and the framework now lets the mesh engine, which accepts them, judge.
