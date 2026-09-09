@@ -2,7 +2,8 @@ from math import pi
 
 from molejo import Arc, Circle, Line, P, Shape
 
-from solid_node.node import MolejoNode, SignalPort
+from solid_node.node import MolejoNode
+from solid_node.motion.ports import SignalPort
 from solid_node.parameters import Length
 
 from . import colors
